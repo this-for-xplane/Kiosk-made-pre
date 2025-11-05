@@ -21,7 +21,6 @@ body { display:flex; justify-content:center; align-items:flex-start; height:100v
   flex-direction:column;
   transform: translateY(0);
   transition: transform 0.05s linear;
-  padding-bottom:25px; /* 🔹 아래 바디 부분 살짝 늘림 */
 }
 
 /* Top UI */
@@ -43,25 +42,25 @@ body { display:flex; justify-content:center; align-items:flex-start; height:100v
 /* Bottom buttons layout */
 .bottom-buttons { display:flex; justify-content:space-between; gap:5px; padding:10px; background:#ccc; border-top:4px solid #aaa; border-radius:0 0 20px 20px; }
 
-/* Card Slot */
-.card-slot { flex:1; background:#888; border-radius:8px; color:white; font-weight:bold; display:flex; justify-content:center; align-items:center; cursor:pointer; position:relative; box-shadow: inset 0 -3px 5px rgba(0,0,0,0.2); overflow:hidden; }
-.card-slot::before { content:''; position:absolute; top:55%; left:50%; width:80%; height:8px; background:#555; border-radius:3px; transform:translateX(-50%); }
-
-/* 🔹 카드 삽입 화살표 */
+/* 카드 삽입 안내 화살표 */
 .card-arrow {
   position:absolute;
   top:-18px;
   left:50%;
   transform:translateX(-50%);
-  font-size:18px;
-  color:#333;
+  color:#222;
   font-weight:bold;
-  animation: arrowBlink 1s infinite;
+  font-size:14px;
+  background:#fff;
+  padding:2px 6px;
+  border-radius:6px;
+  box-shadow:0 2px 4px rgba(0,0,0,0.2);
+  user-select:none;
 }
-@keyframes arrowBlink {
-  0%,100% {opacity:1;}
-  50% {opacity:0.3;}
-}
+
+/* Card Slot */
+.card-slot { flex:1; background:#888; border-radius:8px; color:white; font-weight:bold; display:flex; justify-content:center; align-items:center; cursor:pointer; position:relative; box-shadow: inset 0 -3px 5px rgba(0,0,0,0.2); overflow:hidden; padding-top:25px; } /* 슬롯 부분 살짝 늘림 */
+.card-slot::before { content:''; position:absolute; top:55%; left:50%; width:80%; height:8px; background:#555; border-radius:3px; transform:translateX(-50%); }
 
 /* Card inside */
 .card-insert { 
@@ -83,7 +82,7 @@ body { display:flex; justify-content:center; align-items:flex-start; height:100v
 
 /* Receipt Slot */
 .receipt-slot { flex:1; background:#666; border-radius:8px; color:white; font-weight:bold; display:flex; justify-content:center; align-items:flex-start; cursor:pointer; box-shadow: inset 0 -4px 6px rgba(0,0,0,0.5); position:relative; overflow:hidden;}
-.receipt-insert { position:absolute; width:70%; height:20px; background:#ccc; top:-25px; border-radius:3px; left:15%; transition: top 0.4s; }
+.receipt-insert { position:absolute; width:70%; height:0; background:#ccc; top:0; border-radius:3px; left:15%; transition: height 1.5s ease-in-out; }
 
 /* Height Controls */
 .height-controls { display:flex; flex-direction:column; gap:5px; margin-left:5px; }
@@ -134,7 +133,7 @@ body { display:flex; justify-content:center; align-items:flex-start; height:100v
       <div class="selected-items" id="selected-items">선택한 메뉴 없음</div>
       <div class="bottom-buttons">
         <div class="card-slot" id="card-slot">
-          <div class="card-arrow">⬆ 카드 삽입구</div> <!-- 🔹 추가된 부분 -->
+          <div class="card-arrow">⬇ 카드 삽입구</div>
           <div class="card-insert" id="card-insert"></div>
         </div>
         <div class="qr-reader" id="qr-reader">QR</div>
@@ -209,7 +208,7 @@ document.getElementById('height-down').addEventListener('mousedown', ()=>{ heigh
 document.getElementById('height-down').addEventListener('mouseup', ()=>clearInterval(heightInterval));
 document.getElementById('height-down').addEventListener('mouseleave', ()=>clearInterval(heightInterval));
 
-// Card animation (ATM-style)
+// Card animation
 let cardInserted = false;
 const cardInsertEl = document.getElementById('card-insert');
 document.getElementById('card-slot').addEventListener('click', ()=>{
@@ -221,14 +220,14 @@ document.getElementById('card-slot').addEventListener('click', ()=>{
   cardInserted = !cardInserted;
 });
 
-// Receipt animation
+// Receipt animation (긴 출력)
 const receiptEl = document.getElementById('receipt-insert');
 document.getElementById('receipt-slot').addEventListener('click', ()=>{
-  receiptEl.style.top = '30%';
-  setTimeout(()=>{ receiptEl.style.top = '-25px'; }, 1000);
+  receiptEl.style.height = '140px';
+  setTimeout(()=>{ receiptEl.style.height = '0'; }, 2500);
 });
 
-// QR
+// QR + 기타 버튼
 document.getElementById('qr-reader').addEventListener('click', ()=>alert('QR/쿠폰 인식'));
 document.getElementById('language-btn').addEventListener('click', ()=>alert('언어 선택'));
 document.getElementById('help-btn').addEventListener('click', ()=>alert('직원 도움 요청'));
