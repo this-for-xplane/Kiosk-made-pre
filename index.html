@@ -3,374 +3,231 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kiosk Simulator - Fixed Version</title>
+<title>Kiosk Simulator</title>
 <style>
-* { box-sizing:border-box; margin:0; padding:0; font-family:'Arial',sans-serif; user-select:none; }
-body {
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  background:#f0f0f0;
-}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Noto Sans KR', sans-serif;
+        background-color: #f5f5f5;
+        display: flex; justify-content: center; align-items: center;
+        height: 100vh;
+    }
 
-.kiosk-container {
-  position:relative;
-}
+    .kiosk {
+        position: relative;
+        width: 380px; height: 650px;
+        background: #fff;
+        border: 2px solid #aaa; border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(0,0,0,0.15);
+    }
 
-.stand {
-  width:360px;
-  background:#fff;
-  border-radius:25px;
-  box-shadow:0 15px 40px rgba(0,0,0,0.25);
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  transform:translateY(0);
-  transition:transform 0.05s linear;
-}
+    .screen {
+        width: 100%; height: 100%;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        text-align: center;
+        transition: opacity 0.4s;
+    }
 
-/* 상단 바 */
-.top-bar {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:#222;
-  color:white;
-  padding:12px 15px;
-}
-.top-bar button {
-  background:#555;
-  color:white;
-  border:none;
-  border-radius:8px;
-  padding:6px 10px;
-  cursor:pointer;
-  font-weight:bold;
-  transition:0.2s;
-}
-.top-bar button:hover { background:#777; }
+    .hidden { display: none; }
 
-/* 메뉴 영역 */
-.main-screen {
-  background:#eaeaea;
-  padding:12px;
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:10px;
-  position:relative;
-}
-.tile {
-  width:45%;
-  height:70px;
-  background:white;
-  border:1px solid #ccc;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:bold;
-  cursor:pointer;
-  box-shadow:0 5px 10px rgba(0,0,0,0.1);
-  transition:0.15s;
-}
-.tile:hover {
-  transform:translateY(-3px);
-  box-shadow:0 8px 15px rgba(0,0,0,0.2);
-}
+    .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        width: 80%;
+        margin-top: 20px;
+    }
 
-/* 결제 표시창 */
-.payment-display {
-  position:absolute;
-  top:40%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background:rgba(0,0,0,0.8);
-  color:white;
-  padding:10px 20px;
-  border-radius:8px;
-  font-weight:bold;
-  opacity:0;
-  transition:opacity 0.3s;
-}
+    .menu-item {
+        padding: 15px;
+        border: 2px solid #ccc;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+    }
 
-/* 하단 영역 */
-.bottom-frame {
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  padding:10px;
-  background:#ccc;
-  border-top:4px solid #aaa;
-}
+    .menu-item:hover {
+        background: #f0f0f0;
+        transform: scale(1.03);
+    }
 
-/* 선택한 아이템 */
-.selected-items {
-  background:#ddd;
-  min-height:45px;
-  border-radius:8px;
-  padding:6px;
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  gap:5px;
-  box-shadow:inset 0 -2px 4px rgba(0,0,0,0.2);
-  font-size:14px;
-}
+    .order-list {
+        margin-top: 20px;
+        width: 80%;
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+        min-height: 100px;
+    }
 
-/* 버튼 라인 */
-.bottom-buttons {
-  display:flex;
-  gap:8px;
-  justify-content:space-between;
-  align-items:center;
-}
+    .order-item {
+        background: #f8f8f8;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 8px;
+        margin: 5px 0;
+        cursor: pointer;
+    }
 
-/* 카드 슬롯 */
-.card-slot {
-  flex:1;
-  background:#777;
-  border-radius:8px;
-  color:white;
-  font-weight:bold;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  position:relative;
-  cursor:pointer;
-  height:50px;
-  box-shadow:inset 0 -4px 6px rgba(0,0,0,0.3);
-  overflow:hidden;
-}
-.card-slot::before {
-  content:'';
-  position:absolute;
-  top:50%;
-  left:50%;
-  width:85%;
-  height:6px;
-  background:#555;
-  border-radius:3px;
-  transform:translate(-50%,-50%);
-}
-.card-insert {
-  position:absolute;
-  width:80%;
-  height:25px;
-  background:linear-gradient(90deg,#3a3a3a,#5a5a5a);
-  border-radius:3px;
-  bottom:-30px;
-  left:10%;
-  transition:transform 0.6s cubic-bezier(0.45,0,0.55,1);
-  transform:translateY(0);
-}
+    .pay-btn {
+        margin-top: auto;
+        margin-bottom: 20px;
+        padding: 10px 25px;
+        border: none;
+        border-radius: 10px;
+        background: #007bff;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .pay-btn:hover { background: #0056b3; }
 
-/* QR */
-.qr-reader {
-  flex:1;
-  background:#e53935;
-  border-radius:8px;
-  color:white;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  position:relative;
-  cursor:pointer;
-  height:50px;
-  box-shadow:inset 0 -4px 6px rgba(0,0,0,0.4);
-}
-.qr-reader::after {
-  content:'';
-  position:absolute;
-  top:10px;
-  left:10px;
-  width:10px;
-  height:10px;
-  background:white;
-  border-radius:50%;
-  animation:blink 1s infinite;
-}
-@keyframes blink {
-  0%,50%,100%{opacity:1;}
-  25%,75%{opacity:0;}
-}
+    /* 카드 삽입구 */
+    .card-slot {
+        position: absolute;
+        bottom: 60px; left: 50%;
+        transform: translateX(-50%);
+        width: 160px; height: 18px;
+        background: #222;
+        border-radius: 3px;
+    }
 
-/* 영수증 슬롯 */
-.receipt-slot {
-  flex:1;
-  background:#666;
-  border-radius:8px;
-  color:white;
-  font-weight:bold;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  position:relative;
-  cursor:pointer;
-  height:50px;
-  box-shadow:inset 0 -4px 6px rgba(0,0,0,0.5);
-  overflow:hidden;
-}
-.receipt-insert {
-  position:absolute;
-  width:70%;
-  height:0;
-  background:#f9f9f9;
-  top:0;
-  left:15%;
-  border-radius:3px;
-  overflow:hidden;
-  box-shadow:0 4px 8px rgba(0,0,0,0.25);
-}
-@keyframes printReceipt {
-  0%{height:0;}
-  20%{height:60px;}
-  50%{height:130px;}
-  75%{height:180px;}
-  100%{height:220px;}
-}
-.receipt-active {
-  animation:printReceipt 3.5s ease-out forwards;
-}
+    /* 카드 */
+    .card {
+        position: absolute;
+        bottom: -60px; left: 50%;
+        transform: translateX(-50%);
+        width: 140px; height: 90px;
+        background: linear-gradient(45deg, #3498db, #2ecc71);
+        border-radius: 10px;
+        border: 2px solid #000;
+        transition: all 1s;
+    }
 
-/* 결제 버튼 */
-#pay-button {
-  background:#28a745;
-  color:white;
-  border:none;
-  padding:8px 12px;
-  border-radius:8px;
-  font-weight:bold;
-  cursor:pointer;
-  display:none;
-}
+    /* 영수증 배출구 */
+    .receipt-slot {
+        position: absolute;
+        bottom: 20px; left: 50%;
+        transform: translateX(-50%);
+        width: 100px; height: 8px;
+        background: #222;
+        border-radius: 3px;
+    }
 
-/* 환영화면 */
-#welcome-overlay {
-  position:absolute;
-  inset:0;
-  background:linear-gradient(180deg,#007bff,#004aad);
-  color:white;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  font-weight:bold;
-  font-size:24px;
-  border-radius:25px;
-  z-index:50;
-  cursor:pointer;
-}
-#welcome-overlay p { font-size:15px; margin-top:10px; opacity:0.9; }
+    /* 영수증 */
+    .receipt {
+        position: absolute;
+        bottom: 20px; left: 50%;
+        transform: translateX(-50%);
+        width: 90px; height: 0;
+        background: white;
+        border: 1px solid #aaa;
+        transition: height 1s;
+        overflow: hidden;
+        text-align: center;
+        font-size: 12px;
+    }
+
+    .fade-in { animation: fadeIn 0.8s forwards; }
+    @keyframes fadeIn {
+        from { opacity: 0; } to { opacity: 1; }
+    }
 </style>
 </head>
 <body>
 
-<div class="kiosk-container">
-  <div class="stand" id="stand">
-    <div class="top-bar">
-      <button id="language-btn">🌐 언어</button>
-      <button id="help-btn">도움</button>
+<div class="kiosk">
+
+    <!-- 시작 화면 -->
+    <div class="screen" id="welcomeScreen">
+        <h2>환영합니다 👋</h2>
+        <p style="margin-top:10px; color:#555;">화면을 터치하여 시작하세요</p>
     </div>
 
-    <div class="main-screen" id="main-screen">
-      <div class="tile">메뉴 1</div>
-      <div class="tile">메뉴 2</div>
-      <div class="tile">메뉴 3</div>
-      <div class="tile">메뉴 4</div>
-      <div class="tile">메뉴 5</div>
-      <div class="tile">메뉴 6</div>
-      <div class="payment-display" id="payment-display">결제 중...</div>
-    </div>
-
-    <div class="bottom-frame">
-      <div class="selected-items" id="selected-items">선택한 메뉴 없음</div>
-      <div class="bottom-buttons">
-        <div class="card-slot" id="card-slot">
-          <div class="card-insert" id="card-insert"></div>
+    <!-- 메뉴 화면 -->
+    <div class="screen hidden" id="menuScreen">
+        <h2>메뉴 선택</h2>
+        <div class="menu-grid" id="menuGrid">
+            <div class="menu-item" data-name="아메리카노">아메리카노</div>
+            <div class="menu-item" data-name="라떼">라떼</div>
+            <div class="menu-item" data-name="카푸치노">카푸치노</div>
+            <div class="menu-item" data-name="레몬에이드">레몬에이드</div>
         </div>
-        <div class="qr-reader" id="qr-reader">QR</div>
-        <div class="receipt-slot" id="receipt-slot">
-          영수증
-          <div class="receipt-insert" id="receipt-insert"></div>
-        </div>
-        <button id="pay-button">결제하기</button>
-      </div>
-    </div>
-  </div>
 
-  <div id="welcome-overlay">
-    환영합니다
-    <p>화면을 터치하여 시작하세요</p>
-  </div>
+        <div class="order-list" id="orderList"></div>
+        <button class="pay-btn" id="payBtn">결제하기</button>
+    </div>
+
+    <div class="card-slot"></div>
+    <div class="receipt-slot"></div>
+    <div class="card" id="card"></div>
+    <div class="receipt" id="receipt">결제 완료<br>감사합니다!</div>
+
 </div>
 
 <script>
-const selectedItems = document.getElementById('selected-items');
-const tiles = document.querySelectorAll('.tile');
-const payButton = document.getElementById('pay-button');
-const cardSlot = document.getElementById('card-slot');
-const cardInsert = document.getElementById('card-insert');
-const receiptInsert = document.getElementById('receipt-insert');
-const paymentDisplay = document.getElementById('payment-display');
-const welcomeOverlay = document.getElementById('welcome-overlay');
-let cardInserted = false;
+    const welcomeScreen = document.getElementById("welcomeScreen");
+    const menuScreen = document.getElementById("menuScreen");
+    const payBtn = document.getElementById("payBtn");
+    const card = document.getElementById("card");
+    const receipt = document.getElementById("receipt");
+    const menuGrid = document.getElementById("menuGrid");
+    const orderList = document.getElementById("orderList");
 
-// 메뉴 선택
-tiles.forEach(tile=>{
-  tile.addEventListener('click',()=>{
-    if(selectedItems.textContent==="선택한 메뉴 없음") selectedItems.textContent="";
-    const tag = document.createElement('div');
-    tag.textContent = tile.textContent;
-    tag.style.background="#fff";
-    tag.style.padding="3px 8px";
-    tag.style.borderRadius="6px";
-    tag.style.border="1px solid #ccc";
-    selectedItems.appendChild(tag);
-    payButton.style.display='inline-block';
-  });
-});
+    // 1️⃣ 화면 터치 시 메뉴로 이동
+    welcomeScreen.addEventListener("click", () => {
+        welcomeScreen.classList.add("hidden");
+        menuScreen.classList.remove("hidden");
+        menuScreen.classList.add("fade-in");
+    });
 
-// 결제 버튼 클릭 → 카드 삽입 안내
-payButton.addEventListener('click',()=>{
-  alert("카드 투입구를 터치하세요!");
-});
+    // 2️⃣ 메뉴 선택
+    menuGrid.addEventListener("click", (e) => {
+        if (!e.target.classList.contains("menu-item")) return;
+        const name = e.target.dataset.name;
 
-// 카드 슬롯 클릭 시 결제 진행
-cardSlot.addEventListener('click',()=>{
-  if(selectedItems.textContent==="선택한 메뉴 없음" || cardInserted) return;
-  performPayment();
-});
+        const item = document.createElement("div");
+        item.classList.add("order-item");
+        item.textContent = name;
 
-function performPayment(){
-  cardInserted = true;
-  cardInsert.style.transform = "translateY(-110%)";
-  paymentDisplay.textContent = "결제 중...";
-  paymentDisplay.style.opacity = "1";
+        // 다시 클릭 시 제거
+        item.addEventListener("click", () => item.remove());
 
-  setTimeout(()=>{ paymentDisplay.textContent = "결제 완료!"; },2000);
-  setTimeout(()=>{ receiptInsert.classList.add('receipt-active'); },2500);
-  setTimeout(()=>{
-    paymentDisplay.style.opacity = "0";
-    cardInsert.style.transform = "translateY(0)";
-    setTimeout(()=>{
-      receiptInsert.classList.remove('receipt-active');
-      receiptInsert.style.height="0";
-      selectedItems.textContent = "선택한 메뉴 없음";
-      payButton.style.display='none';
-      cardInserted = false;
-    },4000);
-  },6000);
-}
+        orderList.appendChild(item);
+    });
 
-// QR / 기타 버튼
-document.getElementById('qr-reader').addEventListener('click',()=>alert("QR코드를 인식하세요"));
-document.getElementById('language-btn').addEventListener('click',()=>alert("언어 변경"));
-document.getElementById('help-btn').addEventListener('click',()=>alert("도움이 필요하신가요?"));
+    // 3️⃣ 결제 버튼 클릭
+    payBtn.addEventListener("click", () => {
+        if (orderList.children.length === 0) {
+            alert("상품을 선택해주세요!");
+            return;
+        }
 
-// 환영화면 클릭시 시작
-welcomeOverlay.addEventListener('click',()=>{ welcomeOverlay.style.display='none'; });
+        alert("카드를 투입구에 넣어주세요.");
+
+        // 카드 삽입 애니메이션
+        setTimeout(() => {
+            card.style.bottom = "60px"; // 카드 삽입
+        }, 1000);
+
+        // 결제 완료 후 카드 복귀
+        setTimeout(() => {
+            card.style.bottom = "-60px";
+        }, 3000);
+
+        // 영수증 출력
+        setTimeout(() => {
+            receipt.style.height = "80px";
+        }, 4000);
+
+        // 리셋
+        setTimeout(() => {
+            receipt.style.height = "0";
+            orderList.innerHTML = "";
+        }, 7000);
+    });
 </script>
 
 </body>
