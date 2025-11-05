@@ -68,33 +68,48 @@ body {
 .receipt {
   width:180px;
   margin:0 auto;
-  background:#f9f9f9; /* 밝게 변경됨 */
+  background:#f9f9f9; /* 밝은 종이색 */
   color:#000;
   font-size:13px;
-  border-radius:0 0 4px 4px;
+  border-radius:0 0 6px 6px;
   text-align:center;
   overflow:hidden;
-  box-shadow:0 3px 6px rgba(0,0,0,0.2);
+  box-shadow:0 4px 8px rgba(0,0,0,0.25),
+              inset 0 0 3px rgba(255,255,255,0.7); /* 종이 질감 */
   position:relative;
-  height:0; /* 초기엔 감춤 */
+  height:0;
+  transform-origin: top;
 }
 
-/* 영수증 나오는 애니메이션 */
+/* 영수증 인쇄 애니메이션 */
 @keyframes printReceipt {
-  0% {height:0;}
-  25% {height:60px;}
-  50% {height:130px;}
+  0% {height:0; transform:translateY(0);}
+  20% {height:70px;}
+  50% {height:150px;}
   75% {height:190px;}
-  100% {height:220px;}
+  100% {height:230px;}
 }
 
 .receipt.active {
-  animation: printReceipt 3s ease-out forwards;
+  animation: printReceipt 3.5s cubic-bezier(0.42, 0, 0.25, 1.05) forwards;
 }
 
+/* 영수증 내용 */
 .receipt-content {
   padding:10px;
   border-top:2px dashed #333;
+}
+
+/* 살짝 진동 (프린터 진동 효과) */
+@keyframes printerShake {
+  0%, 100% {transform:translateY(0);}
+  25% {transform:translateY(-2px);}
+  50% {transform:translateY(2px);}
+  75% {transform:translateY(-1px);}
+}
+
+.shake {
+  animation: printerShake 0.2s ease-in-out infinite;
 }
 </style>
 </head>
@@ -122,15 +137,20 @@ body {
 const card = document.getElementById("card-insert");
 const display = document.getElementById("display");
 const receipt = document.getElementById("receipt");
+const stand = document.getElementById("stand");
 
 card.addEventListener("click", () => {
+  // 카드 삽입 애니메이션
   card.style.top = "45%";
   display.textContent = "결제 중...";
-  
+  stand.classList.add("shake");
+
+  // 결제 완료 후
   setTimeout(() => {
+    stand.classList.remove("shake");
     display.textContent = "결제 완료!";
     receipt.classList.add("active");
-  }, 1500);
+  }, 2000);
 });
 </script>
 
