@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -436,11 +437,11 @@ welcomeOverlay.addEventListener('click',()=>{ welcomeOverlay.style.display='none
 // 🔼🔽 높이 조절 버튼 기능
 upBtn.addEventListener('click', () => {
   currentY -= 20;
-  stand.style.transform = `translateY(${currentY}px)`;
+  document.querySelector('.kiosk-container').style.transform = `translateY(${currentY}px)`; // 수정
 });
 downBtn.addEventListener('click', () => {
   currentY += 20;
-  stand.style.transform = `translateY(${currentY}px)`;
+  document.querySelector('.kiosk-container').style.transform = `translateY(${currentY}px)`; // 수정
 });
 </script>
 
